@@ -1,9 +1,12 @@
 package com.example.gizo.simple
 
-import android.annotation.SuppressLint
+import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -46,12 +49,11 @@ import de.artificient.gizo.sdk.GizoAnalysis
 class MainActivity : ComponentActivity() {
     private val recordingPermission: Array<String>
         get() {
-            val basePermission = Gizo.app.permissionRequired
             //Other permissions can be added here
-            return basePermission
+            return Gizo.app.permissionRequired
         }
 
-    val gizoAnalysis: GizoAnalysis = Gizo.app.gizoAnalysis
+    private val gizoAnalysis: GizoAnalysis = Gizo.app.gizoAnalysis
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +65,9 @@ class MainActivity : ComponentActivity() {
             val previewView: PreviewView = remember { PreviewView(context) }
 
             gizoAnalysis.start(lifecycleOwner = this) {
+            }
+
+            gizoAnalysis.startCamera(lifecycleOwner = this) {
                 attachPreview(previewView = previewView)
             }
 
@@ -78,13 +83,28 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+            val usageAccessSettingsIntent = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.StartActivityForResult()
+            ) { activityResult ->
+                if (activityResult.resultCode == RESULT_OK)
+                    isPermissionGranted.value = true
+            }
+
             LaunchedEffect(true) {
                 checkAndRequestLocationPermissions(
                     context,
                     recordingPermission,
                     launcherDrivePermission
                 ) {
-                    isPermissionGranted.value = true
+                    if (recordingPermission.contains(Manifest.permission.READ_PHONE_STATE)) {
+                        if (hasUsageStatsPermission()) {
+                            isPermissionGranted.value = true
+                        } else {
+                            usageAccessSettingsIntent.launch(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                        }
+                    } else {
+                        isPermissionGranted.value = true
+                    }
                 }
             }
 
@@ -102,6 +122,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        gizoAnalysis.stopCamera()
         gizoAnalysis.stop()
     }
 }
@@ -113,8 +134,7 @@ private fun checkAndRequestLocationPermissions(
     hasPermissionCallback: () -> Unit
 ) {
 
-    if (
-        permission.all {
+    if (permission.all {
             ContextCompat.checkSelfPermission(
                 context,
                 it
@@ -227,19 +247,32 @@ fun ScreenDetails(
                     ) {
                         onPreviewClick()
                     },
-                )
-             }
-         }
+            )
+        }
     }
+}
 
-@SuppressLint("UnrememberedMutableState")
+
 @Preview(device = Devices.DEFAULT, widthDp = 720, heightDp = 320)
 @Composable
 fun ScreenPreview() {
     ScreenDetails(
-        recordingFlag = mutableStateOf(true),
-        previewFlag = mutableStateOf(true),
+        recordingFlag = remember { mutableStateOf(true) },
+        previewFlag = remember { mutableStateOf(true) },
         onRecordingClick = {},
         onPreviewClick = {}
     )
+}
+
+fun Context.hasUsageStatsPermission(): Boolean {
+    val appOps = getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        val mode = appOps.unsafeCheckOpNoThrow(
+            android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+            android.os.Process.myUid(), packageName
+        )
+        mode == android.app.AppOpsManager.MODE_ALLOWED
+    } else {
+        true
+    }
 }

@@ -36,7 +36,7 @@ class Application : Application() {
                         .mapBoxKey("MAPBOX_PUBLIC_KEY")
                         .interval(1000L)
                         .maxWaitTime(1000L)
-                        .withForegroundService(true)
+                        .withForegroundService(false)
                         .saveCsvFile(true)
                         .fileLocation(FileLocationPath.CACHE)
                         .saveDataTimerPeriod(10L)
@@ -62,6 +62,8 @@ class Application : Application() {
                 .batterySetting(
                     GizoBatterySetting.Builder()
                         .checkBattery(true)
+                        .saveCsvFile(true)
+                        .checkTemperature(true)
                         .lowBatteryLimit(25f)
                         .lowBatteryStop(15f)
                         .interval(5000L)
@@ -70,6 +72,18 @@ class Application : Application() {
                 .orientationSetting(
                     GizoOrientationSetting.Builder()
                         .allowGravitySensor(true)
+                        .build()
+                )
+                .userActivitySetting(
+                    GizoUserActivitySetting.Builder()
+                        .allowUserActivity(true)
+                        .saveCsvFile(true)
+                        .build()
+                )
+                .deviceEventSetting(
+                    GizoDeviceEventSetting.Builder()
+                        .allowDeviceEvent(true)
+                        .saveCsvFile(true)
                         .build()
                 )
                 .build()
