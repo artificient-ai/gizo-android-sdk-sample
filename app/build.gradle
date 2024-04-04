@@ -8,7 +8,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.gizo.simple"
+        applicationId "de.artificient.gizo.sdk.sample"
         minSdk 26
         targetSdk 34
         versionCode 1
@@ -74,5 +74,5 @@ dependencies {
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
-    implementation 'com.github.artificient-ai:gizo-android-sdk-alpha:0.2.0'
+    implementation 'com.github.artificient-ai:gizo-android-sdk-alpha:0.2.1'
 }
