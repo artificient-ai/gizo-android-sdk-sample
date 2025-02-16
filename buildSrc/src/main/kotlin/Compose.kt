@@ -1,0 +1,33 @@
+object Compose {
+    const val composeVersion = "1.5.4"
+    const val composeCompiler="1.5.4"
+    private const val composeBOMVersion = "2023.10.01"
+
+    private const val material3Version = "1.1.2"
+    private const val materialVersion = "1.5.4"
+    private const val windowSizeClassVersion = "1.1.2"
+    private const val composeActivitiesVersion = "1.8.2"
+    private const val composeNavigationVersion = "2.7.6"
+    private const val composeCoilVersion = "2.5.0"
+    private const val composeLifecycleVersion = "2.5.1"
+    private const val composeFoundationVersion = "1.3.1"
+    private const val sheetsComposeDialogsVersion = "1.2.1"
+
+
+    const val composeBom = "androidx.compose:compose-bom:${composeBOMVersion}"
+    const val runtime = "androidx.compose.runtime:runtime:${composeVersion}"
+    const val ui = "androidx.compose.ui:ui:${composeVersion}"
+    const val uiTooling = "androidx.compose.ui:ui-tooling:${composeVersion}"
+    const val uiToolingPreview = "androidx.compose.ui:ui-tooling-preview:${composeVersion}"
+    const val material = "androidx.compose.material:material:${materialVersion}"
+    const val material3 = "androidx.compose.material3:material3:${material3Version}"
+    const val windowSizeClass = "androidx.compose.material3:material3-window-size-class:${windowSizeClassVersion}"
+    const val foundation = "androidx.compose.foundation:foundation:${composeFoundationVersion}"
+    const val activity = "androidx.activity:activity-compose:${composeActivitiesVersion}"
+    const val navigation = "androidx.navigation:navigation-compose:${composeNavigationVersion}"
+    const val composeCoil= "io.coil-kt:coil-compose:$composeCoilVersion"
+    const val composeLifecycle= "androidx.lifecycle.lifecycle-runtime-compose:$composeLifecycleVersion"
+    const val composeDialogsCore = "com.maxkeppeler.sheets-compose-dialogs:core:$sheetsComposeDialogsVersion"
+    const val composedateTimeDialogs = "com.maxkeppeler.sheets-compose-dialogs:date_time:$sheetsComposeDialogsVersion"
+    const val composeCalendarDialogs = "com.maxkeppeler.sheets-compose-dialogs:calendar:$sheetsComposeDialogsVersion"
+}
