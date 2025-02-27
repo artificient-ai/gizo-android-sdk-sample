@@ -1,14 +1,18 @@
 package de.artificient.gizo.sdk.sample
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
@@ -95,7 +99,16 @@ class MainActivity : ComponentActivity() {
 
                     }
                 )
+
+                Spacer(modifier = Modifier.height(40.dp))
+
+                Text("Device ID: ${getDeviceID(context = this@MainActivity)}")
             }
         }
+    }
+
+    @SuppressLint("HardwareIds")
+    private fun getDeviceID(context: Context): String {
+        return Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
     }
 }
