@@ -101,5 +101,5 @@ dependencies {
         kapt(hiltWorkCompiler)
     }
 
-    implementation("com.github.artificient-ai:gizo-android-sdk-alpha:2.0.4")
+    implementation("com.github.artificient-ai:gizo-android-sdk-alpha:2.0.6")
 }
