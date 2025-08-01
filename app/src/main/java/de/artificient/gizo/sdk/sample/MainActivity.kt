@@ -7,12 +7,17 @@ import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
@@ -23,15 +28,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import dagger.hilt.android.AndroidEntryPoint
+import de.artificient.gizo.sdk.model.CrashMode
 import de.artificient.gizo.sdk.sample.designsystem.component.RowSwitchItem
 import de.artificient.gizo.sdk.sample.recording.presentation.camera.RecordingCameraActivity
 import de.artificient.gizo.sdk.sample.recording.presentation.nocamera.RecordingNoCameraActivity
@@ -67,7 +75,7 @@ class MainActivity : ComponentActivity() {
                 onCrashDetectionChange = {
                     viewModel.crashDetectionChange(it)
                 },
-                onAccidentTestModeChange = {
+                onCrashModeChange = {
                     viewModel.accidentTestModeChange(it)
                 }
             )
@@ -88,7 +96,7 @@ class MainActivity : ComponentActivity() {
         onDriveNow: () -> Unit = {},
         onDriveNowWithoutCamera: () -> Unit = {},
         onCrashDetectionChange: (Boolean) -> Unit = {},
-        onAccidentTestModeChange: (Boolean) -> Unit = {},
+        onCrashModeChange: (CrashMode) -> Unit = {},
         uiState: MainActivityUiState = MainActivityUiState(),
     ) {
 
@@ -133,8 +141,49 @@ class MainActivity : ComponentActivity() {
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                AccidentMode(modifier = Modifier, uiState = uiState){
-                    onAccidentTestModeChange(it)
+                CrashModeSelector(
+                    uiState = uiState,
+                    onModeSelected = {
+                        onCrashModeChange(it)
+                    }
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun CrashModeSelector(
+        uiState: MainActivityUiState = MainActivityUiState(),
+        onModeSelected: (CrashMode) -> Unit
+    ) {
+        val options = CrashMode.values()
+
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .background(Color(0xFF1C1C1E), RoundedCornerShape(12.dp))
+                .padding(4.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            options.forEach { mode ->
+                val isSelected = uiState.accidentTestMode == mode
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (isSelected) Color(0xFFB8B8C0) else Color.Transparent)
+                        .clickable { onModeSelected(mode) }
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = mode.name.replace("_", " ").lowercase().replaceFirstChar(Char::uppercase),
+                        color = if (isSelected) Color.Black else Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }
@@ -157,11 +206,9 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun AccidentMode(modifier: Modifier = Modifier, uiState: MainActivityUiState = MainActivityUiState(), onSwitchChange: (Boolean) -> Unit = {}) {
 
-        RowSwitchItem(
-            text = "Accident Test Mode",
-            switchOn = uiState.accidentTestMode,
-            onSwitchChange = {
-                onSwitchChange(it)
+        CrashModeSelector(
+            uiState = uiState,
+            onModeSelected = {
             }
         )
     }

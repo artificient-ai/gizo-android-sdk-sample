@@ -74,32 +74,18 @@ class MainActivityViewModel @AssistedInject constructor(
         }
     }
 
-    fun accidentTestModeChange(accidentTestModeStatus: Boolean){
+    fun accidentTestModeChange(crashMode: CrashMode){
         viewModelScope.launch {
-            if (accidentTestModeStatus) {
-                Gizo.app.setup { option ->
-                    option.toBuilder()
-                        .crashSetting(
-                            option.crashSetting.toBuilder()
-                                .mode(CrashMode.STILL_TEST)
-                                .build()
-                        )
-                        .build()
-                }
-                _uiState.update { it.copy(accidentTestMode = true) }
-            } else {
-                Gizo.app.setup { option ->
-                    option.toBuilder()
-                        .crashSetting(
-                            option.crashSetting.toBuilder()
-                                .mode(CrashMode.PROD)
-                                .build()
-                        )
-                        .build()
-                }
-                _uiState.update { it.copy(accidentTestMode = false) }
-
+            Gizo.app.setup { option ->
+                option.toBuilder()
+                    .crashSetting(
+                        option.crashSetting.toBuilder()
+                            .mode(crashMode)
+                            .build()
+                    )
+                    .build()
             }
+            _uiState.update { it.copy(accidentTestMode = crashMode) }
         }
     }
 
