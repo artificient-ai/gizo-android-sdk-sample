@@ -1,5 +1,6 @@
 package de.artificient.gizo.sdk.sample.recording.presentation
 
+import android.content.Context
 import android.view.ViewGroup
 import androidx.camera.view.PreviewView
 import androidx.lifecycle.LifecycleOwner
@@ -8,34 +9,33 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import de.artificient.gizo.sdk.Gizo
+import dagger.hilt.android.qualifiers.ApplicationContext
 import de.artificient.gizo.sdk.GizoAnalysis
 import de.artificient.gizo.sdk.config.GizoNoCameraSetting
-import de.artificient.gizo.sdk.model.TTCAlert
-import de.artificient.gizo.sdk.model.UserActivityType
+import de.artificient.gizo.sdk.sample.Application
 import de.artificient.gizo.sdk.setting.GizoStopRecordingSetting
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.Timer
 import kotlin.concurrent.fixedRateTimer
 
-class RecordingViewModel @AssistedInject constructor() : ViewModel() {
+class RecordingViewModel @AssistedInject constructor(
+    @ApplicationContext context: Context
+) : ViewModel() {
 
     companion object {
         val TAG = RecordingViewModel::class.simpleName
     }
 
 
-    private val gizoAnalysis: GizoAnalysis = Gizo.app.gizoAnalysis
+    private val gizoAnalysis: GizoAnalysis = (context as Application).gizoAnalysis
 
     private val _notificationEvent = MutableSharedFlow<NotificationEvent>(
         replay = 1,
@@ -70,6 +70,12 @@ class RecordingViewModel @AssistedInject constructor() : ViewModel() {
         }
 
         gizoAnalysis.didUpdateLocation = { location ->
+        }
+
+        gizoAnalysis.onDetectedCrash = { crashDetected ->
+        }
+
+        gizoAnalysis.onUploadedCrash = { crashUploaded ->
         }
     }
 

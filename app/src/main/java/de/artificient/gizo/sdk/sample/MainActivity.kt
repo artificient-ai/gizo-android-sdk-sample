@@ -19,6 +19,8 @@ import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,32 +29,46 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import de.artificient.gizo.sdk.Gizo
-import de.artificient.gizo.sdk.GizoAnalysis
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
+import dagger.hilt.android.AndroidEntryPoint
+import de.artificient.gizo.sdk.sample.designsystem.component.RowSwitchItem
 import de.artificient.gizo.sdk.sample.recording.presentation.camera.RecordingCameraActivity
 import de.artificient.gizo.sdk.sample.recording.presentation.nocamera.RecordingNoCameraActivity
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val gizoAnalysis: GizoAnalysis = Gizo.app.gizoAnalysis
+    @Inject
+    lateinit var assistedFactory: MainActivityViewModel.ViewModelAssistedFactory
+    private val viewModel: MainActivityViewModel by lazy {
+        ViewModelProvider(
+            applicationContext as ViewModelStoreOwner, MainActivityViewModel.Factory(
+                assistedFactory
+            )
+        )[MainActivityViewModel::class.java]
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        gizoAnalysis.didStartRecording = {
-            var eee = 0
-        }
 
-        gizoAnalysis.didStopRecording = {
-            var eee = 0
-        }
         setContent {
             val context = LocalContext.current
+            val uiState by viewModel.uiState.collectAsState()
 
             Screen(
+                uiState = uiState,
                 onDriveNow = {
                     startDriveNow(context)
                 },
                 onDriveNowWithoutCamera = {
                     startDriveNowWithoutCamera(context)
+                },
+                onCrashDetectionChange = {
+                    viewModel.crashDetectionChange(it)
+                },
+                onAccidentTestModeChange = {
+                    viewModel.accidentTestModeChange(it)
                 }
             )
         }
@@ -60,17 +76,21 @@ class MainActivity : ComponentActivity() {
 
     private fun startDriveNow(context: Context) {
         startActivity(Intent(context, RecordingCameraActivity::class.java))
-        finish()
     }
 
     private fun startDriveNowWithoutCamera(context: Context) {
         startActivity(Intent(context, RecordingNoCameraActivity::class.java))
-        finish()
     }
 
     @Preview
     @Composable
-    fun Screen(onDriveNow: () -> Unit = {}, onDriveNowWithoutCamera: () -> Unit = {}) {
+    fun Screen(
+        onDriveNow: () -> Unit = {},
+        onDriveNowWithoutCamera: () -> Unit = {},
+        onCrashDetectionChange: (Boolean) -> Unit = {},
+        onAccidentTestModeChange: (Boolean) -> Unit = {},
+        uiState: MainActivityUiState = MainActivityUiState(),
+    ) {
 
         Box(
             modifier = Modifier
@@ -103,8 +123,47 @@ class MainActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(40.dp))
 
                 Text("Device ID: ${getDeviceID(context = this@MainActivity)}")
+
+                Spacer(modifier = Modifier.height(40.dp))
+
+                CrashDetection(modifier = Modifier, uiState = uiState){
+                    onCrashDetectionChange(it)
+                }
+
+
+                Spacer(modifier = Modifier.height(40.dp))
+
+                AccidentMode(modifier = Modifier, uiState = uiState){
+                    onAccidentTestModeChange(it)
+                }
             }
         }
+    }
+
+    @Preview
+    @Composable
+    fun CrashDetection(modifier: Modifier = Modifier, uiState: MainActivityUiState = MainActivityUiState(), onSwitchChange: (Boolean) -> Unit = {}) {
+
+        RowSwitchItem(
+            text = "Crash Detection",
+            switchOn = uiState.crashDetection,
+            onSwitchChange = {
+                onSwitchChange(it)
+            }
+        )
+    }
+
+    @Preview
+    @Composable
+    fun AccidentMode(modifier: Modifier = Modifier, uiState: MainActivityUiState = MainActivityUiState(), onSwitchChange: (Boolean) -> Unit = {}) {
+
+        RowSwitchItem(
+            text = "Accident Test Mode",
+            switchOn = uiState.accidentTestMode,
+            onSwitchChange = {
+                onSwitchChange(it)
+            }
+        )
     }
 
     @SuppressLint("HardwareIds")
